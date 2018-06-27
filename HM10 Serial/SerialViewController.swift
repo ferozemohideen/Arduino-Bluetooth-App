@@ -133,16 +133,16 @@ final class SerialViewController: UIViewController, UITextFieldDelegate, Bluetoo
 //MARK: BluetoothSerialDelegate
     var data: [CGFloat] = [0]
     var sSubview = UIView()
-    var count = 0
+  
     func serialDidReceiveString(_ message: String) {
+        // INEFFICIENT CODE BELOW: on each iteration, stacks a white subview to hide the previous work instead of erasing previous graph
+        // leads to major RAM usage, important to fix before receiving higher volume data
         sSubview = UIView(frame: CGRect(x: 0, y: 0, width: view.frame.width * 1, height: view.frame.height * 1))
-        sSubview.backgroundColor = UIColor.white // just for test, to make it visible
-        sSubview.center = view.center // that s pretty easy!
+        sSubview.backgroundColor = UIColor.white 
+        sSubview.center = view.center 
         
         view.addSubview(sSubview)
-//        if count != 0 {
-//            lineChart.x.labels.visible = false
-//        }
+
         // add the received text to the textView, optionally with a line break at the end
         mainTextView.text! += message
         let pref = UserDefaults.standard.integer(forKey: ReceivedMessageOptionKey)
@@ -158,19 +158,19 @@ final class SerialViewController: UIViewController, UITextFieldDelegate, Bluetoo
         view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-[label]-|", options: [], metrics: nil, views: views))
         view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-80-[label]", options: [], metrics: nil, views: views))
         
+        // casts the received string as a CGFloat
         let str = message
         let fl = CGFloat((str as NSString).floatValue)
         data.append(fl)
         
-        // simple line with custom x axis labels
-        //xLabels+=["*"]
-        
+        // simple line with custom x axis labels      
         let xLabels: [String] = ["*", "*", "*", "*", "*"]
         
+        // styles the linechart
         lineChart = LineChart()
         lineChart.animation.enabled = true
         lineChart.area = false
-        lineChart.x.labels.visible = false
+        lineChart.x.labels.visible = false // previous xLabels don't really matter since they're hidden anyway
         lineChart.x.grid.count = 5
         lineChart.y.grid.count = 5
         lineChart.x.labels.values = xLabels
@@ -184,7 +184,7 @@ final class SerialViewController: UIViewController, UITextFieldDelegate, Bluetoo
         view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-[chart]-|", options: [], metrics: nil, views: views))
         view.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:[label]-[chart(==200)]", options: [], metrics: nil, views: views))
         
-        count = count+1
+        // TODO: work on clearing the chart and avoiding errors each iteration
         //lineChart.clear()
         //lineChart.addLine(data)
     }
